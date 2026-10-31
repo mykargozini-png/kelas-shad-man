@@ -516,7 +516,26 @@ async function loadOnlineStudentData(){
   });
   db.questions=newQuestions;db.exams=newExams;
   const examNames=new Map(newExams.map(ex=>[ex.id,ex.title]));
-  studentRemoteSubmissions=(data.submissions||[]).map(row=>({id:row.receiptCode||row.id,dbId:row.id,studentId:currentStudent.id,studentName:currentStudent.name,className:currentStudent.className,examId:row.examId,examTitle:row.examTitle||examNames.get(row.examId)||'آزمون',submittedAt:row.submittedAt||row.createdAt||new Date().toISOString(),submittedAtLabel:row.submittedAt?new Date(row.submittedAt).toLocaleString('fa-IR'):'در حال پاسخ‌گویی',answers:[],online:true,status:row.status,receiptCode:row.receiptCode,autoScore:0,autoMax:0,reviewed:false,teacherFeedback:''}));
+  studentRemoteSubmissions=(data.submissions||[]).map(row=>({
+  id:row.receiptCode||row.id,
+  dbId:row.id,
+  studentId:currentStudent.id,
+  studentName:currentStudent.name,
+  className:currentStudent.className,
+  examId:row.examId,
+  examTitle:row.examTitle||examNames.get(row.examId)||'آزمون',
+  submittedAt:row.submittedAt||row.createdAt||new Date().toISOString(),
+  submittedAtLabel:row.submittedAt?new Date(row.submittedAt).toLocaleString('fa-IR'):'در حال پاسخ‌گویی',
+  answers:[],
+  online:true,
+  status:row.status,
+  receiptCode:row.receiptCode,
+  autoScore:0,
+  autoMax:0,
+  reviewed:row.status==='graded',
+  feedback:Array.isArray(row.feedback)?row.feedback:[],
+  teacherFeedback:(row.feedback||[]).map(item=>item.feedback).filter(Boolean).join(' · ')
+}));(row=>({id:row.receiptCode||row.id,dbId:row.id,studentId:currentStudent.id,studentName:currentStudent.name,className:currentStudent.className,examId:row.examId,examTitle:row.examTitle||examNames.get(row.examId)||'آزمون',submittedAt:row.submittedAt||row.createdAt||new Date().toISOString(),submittedAtLabel:row.submittedAt?new Date(row.submittedAt).toLocaleString('fa-IR'):'در حال پاسخ‌گویی',answers:[],online:true,status:row.status,receiptCode:row.receiptCode,autoScore:0,autoMax:0,reviewed:false,teacherFeedback:''}));
   db.submissions=[...db.submissions.filter(x=>!x.online||x.studentId!==currentStudent.id),...studentRemoteSubmissions];
   return data;
 }
