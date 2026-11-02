@@ -163,7 +163,8 @@ function mapStudentQuestion(q) {
     text: q.text || '', options: Array.isArray(q.options) ? q.options : [],
     // پاسخ صحیح عمداً از Edge Function به مرورگر دانش‌آموز ارسال نمی‌شود.
     correct: '', points: Number(q.points ?? 1), help: '', active: true,
-    subject: q.subject || 'عمومی', onlineStudentQuestion: true
+    subject: q.subject || 'عمومی',
+topic: q.topic || null,
   };
 }
 function normalizeAnswerValue(value) {
@@ -293,6 +294,7 @@ function mapQuestionFromSupabase(row) {
     help: row.explanation || '',
     active: row.is_active !== false,
     subject: row.subject || 'عمومی',
+topic: row.topic || '',
     createdAt: row.created_at || new Date().toISOString(),
     updatedAt: row.updated_at || new Date().toISOString()
   };
@@ -647,7 +649,7 @@ async function saveQuestion(e){
   const correct=String(fd.get('correct')||'').trim();
   if(['mcq','tf'].includes(type)&&!options.includes(correct)){toast('پاسخ صحیح باید یکی از گزینه‌ها باشد.');return}
   const old=id?db.questions.find(q=>String(q.id)===id):null;
-  const q={id:id||uid('q'),code,type,text,options,correct,points:Number(fd.get('points'))||0,help:String(fd.get('help')||'').trim(),active:fd.get('active')==='true',updatedAt:new Date().toISOString(),createdAt:old?.createdAt||new Date().toISOString()};
+const q={id:id||uid('q'),code,type,text,subject:String(fd.get('subject')||'عمومی').trim()||'عمومی',topic:String(fd.get('topic')||'').trim(),options,correct,points:Number(fd.get('points'))||0,help:String(fd.get('help')||'').trim(),active:fd.get('active')==='true',updatedAt:new Date().toISOString(),createdAt:old?.createdAt||new Date().toISOString()};
   if(!isSupabaseConfigured()){
     if(old)db.questions=db.questions.map(x=>String(x.id)===id?q:x);else db.questions.push(q);
     persist();editingQuestionId=null;toast(old?'سؤال در همین مرورگر ویرایش شد.':'سؤال در همین مرورگر اضافه شد. برای آنلاین شدن، اتصال Supabase را در تنظیمات راه‌اندازی کنید.');adminDashboard();return;
